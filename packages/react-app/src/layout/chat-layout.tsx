@@ -1,28 +1,9 @@
-import {
-	EditOutlined,
-	MenuOutlined,
-	MinusCircleOutlined,
-	PlusCircleOutlined,
-	PlusOutlined,
-} from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import { DifyApi, IConversationItem } from '@dify-chat/api'
 import { ConversationsContextProvider, IDifyAppItem, useAppContext } from '@dify-chat/core'
 import { generateUuidV4, isTempId, useIsMobile } from '@dify-chat/helpers'
-import { ThemeModeEnum, ThemeModeLabelEnum, useThemeContext } from '@dify-chat/theme'
-import {
-	Button,
-	Dropdown,
-	Empty,
-	Form,
-	GetProp,
-	Input,
-	message,
-	Modal,
-	Popover,
-	Radio,
-	Spin,
-	Tooltip,
-} from 'antd'
+import { useThemeContext } from '@dify-chat/theme'
+import { Button, Drawer, Empty, message, Popover, Spin, Tooltip } from 'antd'
 import dayjs from 'dayjs'
 import { useSearchParams } from 'pure-react-router'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -58,16 +39,16 @@ interface IChatLayoutProps {
 
 export default function ChatLayout(props: IChatLayoutProps) {
 	const { extComponents, renderCenterTitle, initLoading, difyApi } = props
-	const [sidebarOpen, setSidebarOpen] = useState(true)
-	const { themeMode, setThemeMode } = useThemeContext()
+	const isMobile = useIsMobile()
+	// 移动端默认不展开侧边栏，PC端默认展开
+	const [sidebarOpen, setSidebarOpen] = useState(!isMobile)
+	useThemeContext()
 	const { appLoading, currentApp } = useAppContext()
-	const [renameForm] = Form.useForm()
 	const [conversations, setConversations] = useState<IConversationItem[]>([])
 	const [currentConversationId, setCurrentConversationId] = useState<string>('')
 	const currentConversationInfo = useMemo(() => {
 		return conversations?.find(item => item.id === currentConversationId)
 	}, [conversations, currentConversationId])
-	const isMobile = useIsMobile()
 
 	// 创建 Dify API 实例
 	const searchParams = useSearchParams()
@@ -157,37 +138,6 @@ export default function ChatLayout(props: IChatLayoutProps) {
 	}
 
 	/**
-	 * 重命名会话
-	 * @param conversation 会话对象
-	 */
-	const handleRenameConversation = () => {
-		renameForm.setFieldsValue({
-			name: currentConversationInfo?.name,
-		})
-		Modal.confirm({
-			centered: true,
-			destroyOnClose: true,
-			title: '编辑对话名称',
-			content: (
-				<Form
-					form={renameForm}
-					className="mt-3"
-				>
-					<Form.Item name="name">
-						<Input placeholder="请输入" />
-					</Form.Item>
-				</Form>
-			),
-			onOk: async () => {
-				await renameForm.validateFields()
-				const values = await renameForm.validateFields()
-				await onRenameConversation(currentConversationId, values.name)
-				message.success('对话重命名成功')
-			},
-		})
-	}
-
-	/**
 	 * 删除对话
 	 */
 	const onDeleteConversation = async (conversationId: string) => {
@@ -215,110 +165,6 @@ export default function ChatLayout(props: IChatLayoutProps) {
 			return Promise.resolve()
 		}
 	}
-
-	const mobileMenuItems: GetProp<typeof Dropdown, 'menu'>['items'] = useMemo(() => {
-		const actionMenus: GetProp<typeof Dropdown, 'menu'>['items'] = [
-			{
-				key: 'add_conversation',
-				icon: <PlusCircleOutlined />,
-				label: '新增对话',
-				disabled: disableNewButton,
-				onClick: () => {
-					onAddConversation()
-				},
-			},
-			{
-				key: 'rename_conversation',
-				icon: <EditOutlined />,
-				label: '编辑对话名称',
-				disabled: isTempId(currentConversationId),
-				onClick: () => {
-					handleRenameConversation()
-				},
-			},
-			{
-				key: 'delete_conversation',
-				icon: <MinusCircleOutlined />,
-				label: '删除当前对话',
-				disabled: isTempId(currentConversationId),
-				danger: true,
-				onClick: () => {
-					Modal.confirm({
-						centered: true,
-						title: '确定删除当前对话？',
-						content: '删除后，聊天记录将不可恢复。',
-						okText: '删除',
-						cancelText: '取消',
-						onOk: async () => {
-							// 执行删除操作
-							await onDeleteConversation(currentConversationId)
-							message.success('删除成功')
-						},
-					})
-				},
-			},
-			{
-				type: 'divider',
-			},
-		]
-
-		const conversationListMenus: GetProp<typeof Dropdown, 'menu'>['items'] = [
-			{
-				key: 'view-mode',
-				type: 'group',
-				children: [
-					{
-						key: 'light',
-						label: (
-							<Radio.Group
-								key="view-mode"
-								optionType="button"
-								value={themeMode}
-								onChange={e => {
-									setThemeMode(e.target.value as ThemeModeEnum)
-								}}
-							>
-								<Radio value={ThemeModeEnum.SYSTEM}>{ThemeModeLabelEnum.SYSTEM}</Radio>
-								<Radio value={ThemeModeEnum.LIGHT}>{ThemeModeLabelEnum.LIGHT}</Radio>
-								<Radio value={ThemeModeEnum.DARK}>{ThemeModeLabelEnum.DARK}</Radio>
-							</Radio.Group>
-						),
-					},
-				],
-				label: '主题',
-			},
-			{
-				type: 'divider',
-			},
-			{
-				type: 'group',
-				label: '对话列表',
-				children: conversations?.length
-					? conversations.map(item => {
-							return {
-								key: item.id,
-								label: item.name,
-								onClick: () => {
-									setCurrentConversationId(item.id)
-								},
-							}
-						})
-					: [
-							{
-								key: 'no_conversation',
-								label: '暂无对话',
-								disabled: true,
-							},
-						],
-			},
-		]
-
-		if (isTempId(currentConversationId)) {
-			return [...conversationListMenus]
-		}
-
-		return [...actionMenus, ...conversationListMenus]
-	}, [currentConversationId, conversations, themeMode, setThemeMode])
 
 	// 对话列表（包括加载和缺省状态）
 	const conversationListWithEmpty = useMemo(() => {
@@ -376,30 +222,81 @@ export default function ChatLayout(props: IChatLayoutProps) {
 				{/* 头部 */}
 				<HeaderLayout
 					title={renderCenterTitle?.(currentApp?.config?.info)}
-					rightIcon={
-						isMobile ? (
-							<Dropdown
-								menu={{
-									className: '!pb-3 w-[80vw]',
-									activeKey: currentConversationId,
-									items: mobileMenuItems,
-								}}
-							>
-								<MenuOutlined className="text-xl" />
-							</Dropdown>
-						) : null
-					}
+					onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+					onNewConversation={onAddConversation}
+					disableNewButton={disableNewButton}
 				/>
 
 				{/* Main */}
-				<div className="flex-1 overflow-hidden flex rounded-t-3xl bg-theme-main-bg">
+				<div className="flex-1 overflow-hidden flex bg-theme-main-bg">
 					{appLoading || initLoading ? (
 						<div className="absolute w-full h-full left-0 top-0 z-50 flex items-center justify-center">
 							<Spin spinning />
 						</div>
 					) : currentApp?.config ? (
 						<>
-							{/* 左侧对话列表 */}
+							{/* 移动端抽屉式对话列表 */}
+							{isMobile && (
+								<Drawer
+									open={sidebarOpen}
+									onClose={() => setSidebarOpen(false)}
+									placement="left"
+									width="80%"
+									styles={{
+										body: { padding: 0 },
+									}}
+								>
+									<div className="h-full flex flex-col">
+										{currentApp.config.info ? <AppInfo /> : null}
+										{/* 添加会话 */}
+										{currentApp ? (
+											<Button
+												disabled={disableNewButton}
+												onClick={() => {
+													onAddConversation()
+													setSidebarOpen(false)
+												}}
+												type="default"
+												className="h-10 leading-10 rounded-lg border border-solid border-gray-200 mt-3 mx-4 text-theme-text "
+												icon={<PlusOutlined className="" />}
+											>
+												新增对话
+											</Button>
+										) : null}
+										{/* 🌟 对话管理 */}
+										<div className="px-4 mt-3 flex-1 overflow-auto">
+											<Spin spinning={conversationListLoading}>
+												{conversations?.length ? (
+													<ConversationList
+														renameConversationPromise={onRenameConversation}
+														deleteConversationPromise={onDeleteConversation}
+														items={conversations.map(item => {
+															return {
+																key: item.id,
+																label: item.name,
+															}
+														})}
+														activeKey={currentConversationId}
+														onActiveChange={id => {
+															setCurrentConversationId(id)
+															setSidebarOpen(false)
+														}}
+													/>
+												) : (
+													<div className="w-full h-full flex items-center justify-center">
+														<Empty
+															className="pt-6"
+															description="暂无会话"
+														/>
+													</div>
+												)}
+											</Spin>
+										</div>
+									</div>
+								</Drawer>
+							)}
+
+							{/* PC端左侧对话列表 */}
 							<div
 								className={`hidden md:!flex ${sidebarOpen ? 'w-72' : 'w-14'} transition-all h-full flex-col border-0 border-r border-solid border-r-theme-splitter`}
 							>

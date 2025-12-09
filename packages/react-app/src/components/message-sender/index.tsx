@@ -4,11 +4,14 @@ import { DifyApi, IFile, IUploadFileResponse } from '@dify-chat/api'
 import { useAppContext, useConversationsContext } from '@dify-chat/core'
 import { useThemeContext } from '@dify-chat/theme'
 import { useMount } from 'ahooks'
-import { Badge, Button, GetProp, GetRef, message } from 'antd'
+import { Badge, Button, GetProp, GetRef, message, Space } from 'antd'
 import { RcFile } from 'antd/es/upload'
 import { useSearchParams } from 'pure-react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+
+import IconSendFilled from '@/assets/icons/icon_send_filled.svg'
+import { SvgIcon } from '@/components'
 
 import { FileTypeMap, getDifyFileType, getFileExtByName } from './utils'
 
@@ -297,7 +300,32 @@ export const MessageSender = (props: IMessageSenderProps) => {
 					</Badge>
 				) : null
 			}
+			actions={(_, info) => {
+				const { SendButton, LoadingButton } = info.components
+				return (
+					<Space size="small">
+						{/* <ClearButton /> */}
+						{/* <SpeechButton /> */}
+						{isRequesting ? (
+							<LoadingButton />
+						) : (
+							<SendButton
+								type="primary"
+								icon={
+									<SvgIcon
+										src={IconSendFilled}
+										width={16}
+										height={16}
+										alt="send"
+									/>
+								}
+							/>
+						)}
+					</Space>
+				)
+			}}
 			style={{
+				backgroundColor: '#f8f9fa',
 				boxShadow: isLight ? '0px -2px 12px 4px var(--theme-border-color)' : 'none',
 			}}
 			loading={isRequesting}
