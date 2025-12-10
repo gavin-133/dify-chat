@@ -10,7 +10,7 @@ import { LucideIcon } from '@/components'
 
 import CenterTitleWrapper from './center-title-wrapper'
 import './header.css'
-import { GithubIcon, Logo } from './logo'
+import { GithubIcon } from './logo'
 
 export interface IHeaderLayoutProps {
 	/**
@@ -81,16 +81,8 @@ const headerStyleWithShadow = {
  * 头部布局组件
  */
 export default function HeaderLayout(props: IHeaderLayoutProps) {
-	const {
-		isTitleWrapped,
-		title,
-		rightIcon,
-		logoText,
-		renderLogo,
-		onMenuClick,
-		onNewConversation,
-		disableNewButton,
-	} = props
+	const { isTitleWrapped, title, rightIcon, onMenuClick, onNewConversation, disableNewButton } =
+		props
 	const { themeMode } = useThemeContext()
 	const isMobile = useIsMobile()
 
@@ -154,15 +146,8 @@ export default function HeaderLayout(props: IHeaderLayoutProps) {
 			className="h-16 flex items-center justify-between px-4"
 			style={headerStyleWithShadow}
 		>
-			{/* 🌟 Logo */}
-			<HeaderSiderIcon align="left">
-				<Logo
-					text={logoText}
-					renderLogo={renderLogo}
-					hideText={isMobile}
-					hideGithubIcon
-				/>
-			</HeaderSiderIcon>
+			{/* 左侧区域（PC 端不展示 Logo，仅保留占位以保证布局） */}
+			<HeaderSiderIcon align="left">{/* PC 端隐藏 Logo */}</HeaderSiderIcon>
 
 			{/* 中间标题 */}
 			{isTitleWrapped ? title : <CenterTitleWrapper>{title}</CenterTitleWrapper>}
@@ -189,7 +174,7 @@ export default function HeaderLayout(props: IHeaderLayoutProps) {
 								/>
 							</div>
 						</ThemeSelector>
-						<GithubIcon />
+						{/* <GithubIcon /> */}
 					</Space>
 				)}
 			</HeaderSiderIcon>

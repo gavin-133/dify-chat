@@ -44,14 +44,16 @@ const ReferenceItem = (props: IRetrieverResourceGroupedItem) => {
 	const isMobile = useIsMobile()
 	return (
 		<div
-			className="text-gray-600 flex items-center"
+			className="text-gray-600 flex items-center "
 			title={props.name}
 		>
 			<Popover
 				trigger={['click']}
-				classNames={{
-					body: 'max-h-[50vh] max-w-[85vw] md:max-w-[50vw] overflow-y-auto overflow-x-hidden',
-				}}
+				overlayClassName={
+					isMobile
+						? 'max-h-[40vh] max-w-[80vw] overflow-y-auto overflow-x-hidden bg-white rounded-lg shadow-2xl border border-gray-100'
+						: 'max-h-[60vh] max-w-[50vw]  overflow-y-auto overflow-x-hidden bg-white rounded-lg shadow-2xl border border-gray-100'
+				}
 				title={
 					<div
 						title={props.name}
