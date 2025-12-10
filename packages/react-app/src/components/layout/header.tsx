@@ -161,7 +161,7 @@ export default function HeaderLayout(props: IHeaderLayoutProps) {
 						size={16}
 					>
 						<ThemeSelector>
-							<div className="flex items-center cursor-pointer">
+							{/* <div className="flex items-center cursor-pointer">
 								<LucideIcon
 									name={
 										themeMode === 'dark'
@@ -172,7 +172,7 @@ export default function HeaderLayout(props: IHeaderLayoutProps) {
 									}
 									size={20}
 								/>
-							</div>
+							</div> */}
 						</ThemeSelector>
 						{/* <GithubIcon /> */}
 					</Space>

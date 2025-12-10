@@ -10,9 +10,12 @@ const RedirectWrapper = () => {
 	const history = useHistory()
 	const { isAuthorized, goAuthorize } = useAuth()
 	const redirect2Index = useRedirect2Index()
+	const [routeKey, setRouteKey] = useState(0)
 
 	useEffect(() => {
 		const pathname = history.location.pathname
+
+		console.log('路由变化:', pathname, '完整路径:', window.location.pathname)
 
 		// 如果未登录，则跳转登录
 		if (!isAuthorized && pathname !== '/auth') {
@@ -22,10 +25,14 @@ const RedirectWrapper = () => {
 
 		if (pathname === '' || pathname === '/') {
 			redirect2Index()
+			return
 		}
+
+		// 强制更新 Route 组件
+		setRouteKey(prev => prev + 1)
 	}, [history.location.pathname, isAuthorized])
 
-	return <Route />
+	return <Route key={`${history.location.pathname}-${routeKey}`} />
 }
 
 /**
