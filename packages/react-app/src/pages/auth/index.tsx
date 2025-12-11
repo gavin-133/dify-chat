@@ -30,6 +30,13 @@ export default function AuthPage() {
 	 * 登录函数
 	 */
 	const handleLogin = async () => {
+		// 从 URL 参数中获取 authStr
+		const searchParams = new URLSearchParams(window.location.search)
+		const authStr = searchParams.get('authStr')
+		if (authStr) {
+			console.log('Auth String:', authStr)
+			// 这里可以使用 authStr 进行真实的认证
+		}
 		const userInfo = await mockLogin()
 		LocalStorageStore.set(LocalStorageKeys.USER_ID, userInfo.userId)
 		redirect2Index()
