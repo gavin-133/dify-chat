@@ -34,7 +34,7 @@ export default function App() {
 			}}
 		>
 			<BrowserRouter
-				basename="/knowledge"
+				basename=""
 				routes={routes}
 			>
 				<LayoutIndex />
