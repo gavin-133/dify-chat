@@ -59,11 +59,13 @@ echo "🔄 替换 React App 环境变量..."
 # 如果 .env.prod 中未设置，则回退到 localhost 默认值
 PUBLIC_APP_API_BASE=${PUBLIC_APP_API_BASE:-"http://localhost:5300/api/client"}
 PUBLIC_DIFY_PROXY_API_BASE=${PUBLIC_DIFY_PROXY_API_BASE:-"http://localhost:5300/api/client/dify"}
+PUBLIC_AUTH_CENTER_URL=${PUBLIC_AUTH_CENTER_URL:-"http://localhost:5301"}
 PUBLIC_DEBUG_MODE=${PUBLIC_DEBUG_MODE:-"false"}
 
 # Perform replacements in dist/env.js
 ${SED_INPLACE} "s|{{__PUBLIC_APP_API_BASE__}}|$PUBLIC_APP_API_BASE|g" dist/env.js
 ${SED_INPLACE} "s|{{__PUBLIC_DIFY_PROXY_API_BASE__}}|$PUBLIC_DIFY_PROXY_API_BASE|g" dist/env.js
+${SED_INPLACE} "s|{{__PUBLIC_AUTH_CENTER_URL__}}|$PUBLIC_AUTH_CENTER_URL|g" dist/env.js
 ${SED_INPLACE} "s|{{__PUBLIC_DEBUG_MODE__}}|$PUBLIC_DEBUG_MODE|g" dist/env.js
 
 echo "✅ React App 环境变量替换完成"

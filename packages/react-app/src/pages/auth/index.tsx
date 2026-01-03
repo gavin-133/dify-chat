@@ -1,9 +1,9 @@
 import { LocalStorageKeys, LocalStorageStore } from '@dify-chat/helpers'
-import FingerPrintJS from '@fingerprintjs/fingerprintjs'
 import { useMount } from 'ahooks'
 import { Spin } from 'antd'
 
 import { Logo } from '@/components'
+import { config } from '@/config/runtime-config'
 import { useAuth } from '@/hooks/use-auth'
 import { useRedirect2Index } from '@/hooks/use-jump'
 import { useGlobalStore } from '@/store'
@@ -13,21 +13,6 @@ export default function AuthPage() {
 	const redirect2Index = useRedirect2Index()
 	// 从全局 store 中读取通过 isKeepAll=true 保留下来的参数，例如 apps?authStr=xxx&isKeepAll=true
 	const globalParams = useGlobalStore(state => state.globalParams)
-
-	/**
-	 * 模拟登录接口
-	 */
-	const mockLogin = async () => {
-		const fp = await FingerPrintJS.load()
-		const result = await fp.get()
-		return await new Promise<{ userId: string }>(resolve => {
-			setTimeout(() => {
-				resolve({
-					userId: result.visitorId,
-				})
-			}, 2000)
-		})
-	}
 
 	/**
 	 * 登录函数
@@ -47,13 +32,41 @@ export default function AuthPage() {
 
 		// 真实业务中，你可以根据需要选择优先使用哪一个值
 		const authStr = authStrFromStore || authStrFromUrl
-		if (authStr) {
-			// 这里可以使用 authStr 进行真实的认证
-			// TODO: 调用后端接口完成授权
+		if (!authStr) {
+			console.error('未找到 authStr 参数')
+			return
 		}
-		const userInfo = await mockLogin()
-		LocalStorageStore.set(LocalStorageKeys.USER_ID, userInfo.userId)
-		redirect2Index()
+
+		// 调用授权中心解密接口，获取 userId
+		const authCenterUrl = config.PUBLIC_AUTH_CENTER_URL || 'http://localhost:5301'
+		try {
+			const resp = await fetch(`${authCenterUrl}/decrypt?base64=1`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'text/plain;charset=UTF-8',
+				},
+				// 后端要求“请求内容直接放在 body 里”，这里直接传原始 authStr 文本
+				body: authStr,
+			})
+
+			if (!resp.ok) {
+				throw new Error(`授权失败: ${resp.status} ${resp.statusText}`)
+			}
+
+			const data = await resp.json()
+
+			console.log('授权响应:============', data)
+
+
+			if (!data.userId) {
+				throw new Error('授权响应中缺少 userId')
+			}
+
+			LocalStorageStore.set(LocalStorageKeys.USER_ID, data.userId)
+			redirect2Index()
+		} catch (error) {
+			console.error('调用授权中心失败:', error)
+		}
 	}
 
 	useMount(() => {

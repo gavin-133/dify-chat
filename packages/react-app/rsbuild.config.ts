@@ -19,6 +19,9 @@ export default defineConfig({
 			'process.env.PUBLIC_DIFY_PROXY_API_BASE': JSON.stringify(
 				process.env.PUBLIC_DIFY_PROXY_API_BASE ?? '',
 			),
+			'process.env.PUBLIC_AUTH_CENTER_URL': JSON.stringify(
+				process.env.PUBLIC_AUTH_CENTER_URL ?? '',
+			),
 		},
 	},
 	output: {
