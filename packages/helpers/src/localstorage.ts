@@ -5,6 +5,7 @@ const KEY_PREFIX = '__DC__'
 
 const LocalStorageKeyList = [
 	'USER_ID',
+	'AUTH',
 	'ENABLE_SETTING',
 	'THEME',
 	'THEME_MODE',

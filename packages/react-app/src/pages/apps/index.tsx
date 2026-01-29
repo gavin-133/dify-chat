@@ -1,8 +1,9 @@
 import { TagOutlined } from '@ant-design/icons'
 import { AppModeLabels } from '@dify-chat/core'
-import { useIsMobile } from '@dify-chat/helpers'
+import { LocalStorageKeys, LocalStorageStore, useIsMobile } from '@dify-chat/helpers'
 import { useRequest } from 'ahooks'
 import { Col, Empty, message, Row } from 'antd'
+import { useMemo } from 'react'
 import { useHistory } from 'pure-react-router'
 
 import { DebugMode, HeaderLayout, LucideIcon } from '@/components'
@@ -24,6 +25,21 @@ export default function AppListPage() {
 		},
 	)
 
+	const filteredList = useMemo(() => {
+		if (!list) return []
+
+		const authPermissions = LocalStorageStore.get(LocalStorageKeys.AUTH)
+
+		if (!authPermissions || !Array.isArray(authPermissions)) {
+			return list
+		}
+
+		return list.filter(item => {
+			if (!item.info?.name) return false
+			return authPermissions.includes(item.info.name)
+		})
+	}, [list])
+
 	return (
 		<div className="h-screen relative overflow-hidden flex flex-col bg-theme-bg w-full">
 			<HeaderLayout
@@ -39,12 +55,12 @@ export default function AppListPage() {
 				}
 			/>
 			<div className="flex-1 bg-theme-main-bg rounded-t-3xl py-6 overflow-y-auto box-border overflow-x-hidden">
-				{list?.length ? (
+				{filteredList?.length ? (
 					<Row
 						gutter={[16, 16]}
 						className="px-3 md:px-6"
 					>
-						{list.map(item => {
+						{filteredList.map(item => {
 							if (!item.info) {
 								return (
 									<Col

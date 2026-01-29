@@ -63,6 +63,9 @@ export default function AuthPage() {
 			}
 
 			LocalStorageStore.set(LocalStorageKeys.USER_ID, data.userId)
+			if (data.auth) {
+				LocalStorageStore.set(LocalStorageKeys.AUTH, data.auth)
+			}
 			redirect2Index()
 		} catch (error) {
 			console.error('调用授权中心失败:', error)
