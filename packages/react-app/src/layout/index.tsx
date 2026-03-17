@@ -2,6 +2,8 @@ import { useMount } from 'ahooks'
 import { Route, useHistory, useSearchParams } from 'pure-react-router'
 import { useEffect, useState } from 'react'
 
+import { LocalStorageKeys, LocalStorageStore } from '@dify-chat/helpers'
+
 import { useAuth } from '@/hooks/use-auth'
 import { useRedirect2Index } from '@/hooks/use-jump'
 import { useGlobalStore } from '@/store'
@@ -56,6 +58,12 @@ export default function LayoutIndex() {
 				}
 				store.setGlobalParams({ [key]: value })
 			})
+		}
+
+		// 每次携带 authStr 进入时，清除旧的授权缓存，强制重新授权
+		if (searchParams.get('authStr')) {
+			LocalStorageStore.remove(LocalStorageKeys.USER_ID)
+			LocalStorageStore.remove(LocalStorageKeys.AUTH)
 		}
 	}
 

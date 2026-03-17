@@ -73,11 +73,22 @@ export default function AuthPage() {
 	}
 
 	useMount(() => {
-		if (!userId) {
-			// 模拟自动登录
+		// 检查是否有新的授权参数
+		const searchParams = new URLSearchParams(window.location.search)
+		const authStrFromUrl = searchParams.get('authStr')
+		const authStrFromStore = globalParams.authStr
+		const authStr = authStrFromStore || authStrFromUrl
+
+		if (authStr) {
+			// 只要有 authStr，无论是否已有 userId，都重新授权以获取最新权限
 			handleLogin()
 		} else {
-			redirect2Index()
+			// 如果没有提供authStr，且已有用户信息，则直接跳转
+			if (userId) {
+				redirect2Index()
+			} else {
+				console.error('未找到 authStr 参数，无法完成授权')
+			}
 		}
 	})
 
